@@ -1,9 +1,11 @@
 import socket
 import json
+import os
 from protocol import *
 
 CENTRAL_HOST = "192.168.2.61"
 CENTRAL_PORT = 9090
+SHARED_DIR = "shared"
 
 def search(sock, keyword):
     sock.send(f"{SEARCH} {keyword}".encode(ENCODING))
@@ -15,7 +17,10 @@ def download(owner, port, filename):
     s.connect((owner, port))
     s.send(f"{GET} {filename}".encode(ENCODING))
 
-    with open(filename, "wb") as f:
+    # S'assurer que le dossier 'shared' existe
+    os.makedirs(SHARED_DIR, exist_ok=True)
+    path = os.path.join(SHARED_DIR, filename)
+    with open(path, "wb") as f:
         while data := s.recv(BUFFER_SIZE):
             f.write(data)
     s.close()

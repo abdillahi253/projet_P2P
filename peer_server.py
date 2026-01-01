@@ -37,16 +37,17 @@ def load_descriptions(sock):
     resp = sock.recv(BUFFER_SIZE).decode(ENCODING)
     return resp == OK, sock
 
-def handle_client(conn):
+def handle_client(conn, addr):
     request = conn.recv(BUFFER_SIZE).decode(ENCODING)
     cmd, filename = request.split()
 
     if cmd == GET:
-        path = os.path.join(SHARED_DIR, filename)
-        if os.path.exists(path):
-            with open(path, "rb") as f:
-                while chunk := f.read(BUFFER_SIZE):
-                    conn.send(chunk)
+        if addr[0] != HOST:
+            path = os.path.join(SHARED_DIR, filename)
+            if os.path.exists(path):
+                with open(path, "rb") as f:
+                    while chunk := f.read(BUFFER_SIZE):
+                        conn.send(chunk)
     conn.close()
 
 def listen():
@@ -56,8 +57,8 @@ def listen():
     print("Serveur P2P actif sur", PORT)
 
     while True:
-        conn, _ = s.accept()
-        threading.Thread(target=handle_client, args=(conn,)).start()
+        conn, addr = s.accept()
+        threading.Thread(target=handle_client, args=(conn, addr)).start()
 
 
 
