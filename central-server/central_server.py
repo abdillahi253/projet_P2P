@@ -44,12 +44,14 @@ def handle_client(conn, addr):
                 existing['files'] = data['files']
                 save_index()
             conn.send(OK.encode(ENCODING))
-            print("Index actuel:", index)
             
         elif cmd == SEARCH:
             keyword = parts[1].lower()
             results = []
             for entry in index:
+                # Exclure les fichiers dont le propriétaire est l'utilisateur lui-même
+                if entry.get('owner') == addr[0]:
+                    continue
                 for f in entry['files']:
                     if keyword in f['description'].lower():
                         # Ajoute owner et port à chaque résultat
