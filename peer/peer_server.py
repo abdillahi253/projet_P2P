@@ -3,11 +3,11 @@ import threading
 import os
 import json
 from protocol import *
-from peer.cryptpwd import hash_password
+from cryptpwd import hash_password
 
 HOST = "192.168.2.144"
 PORT = 9000
-SHARED_DIR = "~/shared"
+SHARED_DIR = "shared/"
 CENTRAL_HOST = "192.168.2.61"
 CENTRAL_PORT = 9090
 
@@ -48,6 +48,7 @@ def handle_client(conn, addr):
                 with open(path, "rb") as f:
                     while chunk := f.read(BUFFER_SIZE):
                         conn.send(chunk)
+    print("Fichier", filename, "demandé par", addr)
     conn.close()
 
 def listen():

@@ -38,11 +38,9 @@ def handle_client(conn, addr):
             data = json.loads(payload)
             if data.get('owner') not in index:
                 index.append(data)
-                save_index()
             elif data.get('owner') in index:
                 existing = next(f for f in index if f['owner'] == data['owner'])
                 existing['files'] = data['files']
-                save_index()
             conn.send(OK.encode(ENCODING))
             
         elif cmd == SEARCH:
@@ -76,21 +74,8 @@ def load_users():
     except FileNotFoundError:
         users = {}
 
-def save_index():
-    with open("index.json", "w", encoding="utf-8") as f:
-        json.dump(index, f)
-
-def load_index():
-    global index
-    try:
-        with open("index.json", "r", encoding="utf-8") as f:
-            index = json.load(f)
-    except FileNotFoundError:
-        index = []
-
 def main():
     load_users()
-    load_index()
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.bind((HOST, PORT))
     s.listen()

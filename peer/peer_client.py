@@ -5,7 +5,7 @@ from protocol import *
 
 CENTRAL_HOST = "192.168.2.61"
 CENTRAL_PORT = 9090
-SHARED_DIR = "shared"
+SHARED_DIR = "/~/shared"
 
 def search(sock, keyword):
     sock.send(f"{SEARCH} {keyword}".encode(ENCODING))
@@ -36,16 +36,41 @@ def main():
     if not sock:
         return
 
-    keyword = input("Mot-clé: ")
-    results = search(sock, keyword)
+    while True:
+        user_input = input("Voulez-vous rechercher un fichier? (o/n): ")
+        if user_input.lower() != 'o':
+            break
+        keyword = input("Mot-clé: ")
+        results = search(sock, keyword)
 
-    print("Résultats:")
-    for r in results:
-        print(r)
+        print("Résultats:")
+        if results:
+            headers = ["#", "Nom", "Description", "Owner", "Port"]
+            row_format = "{:<3} {:<20} {:<30} {:<15} {:<6}"
+            print(row_format.format(*headers))
+            print("-" * 80)
+            for i, r in enumerate(results, 1):
+                print(row_format.format(
+                    i,
+                    r.get('filename', ''),
+                    r.get('description', ''),
+                    r.get('owner', ''),
+                    r.get('port', '')
+                ))
+        else:
+            print("Aucun résultat trouvé.")
 
-    if results:
-        r = results[0]
-        download(r['owner'], r['port'], r['filename'])
+        if results:
+            choix = input("Numéros des fichiers à télécharger (ex: 1,2,3) : ")
+            nums = [int(x.strip()) for x in choix.split(",") if x.strip().isdigit()]
+            for n in nums:
+                if 1 <= n <= len(results):
+                    r = results[n-1]
+                    print(f"Téléchargement de {r['filename']} depuis {r['owner']}:{r['port']}...")
+                    download(r['owner'], r['port'], r['filename'])
+                else:
+                    print(f"Numéro {n} invalide.")
+        
 
 
 if __name__ == "__main__":
